@@ -1,5 +1,5 @@
 '''
-summary:
+A summary comment of the code:
 This script trains and evaluates a ResNet18 model for image classification using transfer learning. 
 The model is trained on TPU with PyTorch XLA support, and key functionalities include data augmentation, dynamic train-validation splitting, performance tracking, 
 and visualization of training metrics. A confusion matrix is plotted at the end to evaluate the model’s performance on the test set.
@@ -32,29 +32,29 @@ data_transforms = {
         transforms.RandomResizedCrop(224),  # Randomly resize and crop for augmentation
         transforms.RandomHorizontalFlip(),  # Horizontal flip for data augmentation
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalize using ImageNet mean and std
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalizing using ImageNet mean and std
     ]),
     'val': transforms.Compose([
-        transforms.Resize(256),  # Resize for validation
+        transforms.Resize(256),  # Resizing for validation
         transforms.CenterCrop(224),  # Center crop for validation
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalize using ImageNet mean and std
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalizing using ImageNet mean and std
     ]),
 }
 
-# 2. Load the datasets using ImageFolder (assumes data is in subdirectories by class)
+# 2. Loadded the datasets using ImageFolder (assumes data is in subdirectories by class)
 train_path = 'seg_train/seg_train'  # Path to training dataset
 test_path = 'seg_test/seg_test'  # Path to test dataset
 
 full_trainset = torchvision.datasets.ImageFolder(root=train_path, transform=data_transforms['train'])
 testset = torchvision.datasets.ImageFolder(root=test_path, transform=data_transforms['val'])
 
-# 3. Create train/validation split dynamically (80/20 split)
+# 3. Creatting train/validation split dynamically (80/20 split)
 train_size = int(0.8 * len(full_trainset))  # 80% of dataset for training
 val_size = len(full_trainset) - train_size  # 20% for validation
 trainset, valset = random_split(full_trainset, [train_size, val_size])
 
-# Create data loaders
+# Creatting data loaders
 trainloader = DataLoader(trainset, batch_size=32, shuffle=True)
 valloader = DataLoader(valset, batch_size=32, shuffle=False)
 testloader = DataLoader(testset, batch_size=32, shuffle=False)
@@ -68,15 +68,15 @@ import torchvision.models as models
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.resnet = models.resnet18(weights='IMAGENET1K_V1')  # Use ResNet18 with pretrained weights
-        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, len(full_trainset.classes))  # Adjust output layer for number of classes
+        self.resnet = models.resnet18(weights='IMAGENET1K_V1')  # Using ResNet18 with pretrained weights
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, len(full_trainset.classes))  # Adjusting output layer for number of classes
 
     def forward(self, x):
         return self.resnet(x)
 
 net = Net()
 
-# 5. Move model to TPU (or CPU/GPU)
+# 5. Moving model to TPU (or CPU/GPU)
 device = xm.xla_device() if torch.cuda.is_available() else torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 net = net.to(device)
 
@@ -84,7 +84,7 @@ net = net.to(device)
 criterion = nn.CrossEntropyLoss()  # Cross-entropy loss for multi-class classification
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-# 7. Add a learning rate scheduler (decays LR by a factor of 0.1 every 7 epochs)
+# 7. Added a learning rate scheduler (decays LR by a factor of 0.1 every 7 epochs)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 # 8. Define the training function with validation accuracy tracking and saving best model
@@ -110,7 +110,7 @@ def train_model_tpu(net, dataloaders, optimizer, scheduler, criterion, num_epoch
             running_loss = 0.0
             running_corrects = 0
 
-            # Iterate over data
+            # Iteratting over data
             for inputs, labels in dataloaders[phase]:
                 inputs, labels = inputs.to(device), labels.to(device)
 
@@ -146,7 +146,7 @@ def train_model_tpu(net, dataloaders, optimizer, scheduler, criterion, num_epoch
 
             print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
 
-            # Save the model with the best validation accuracy
+            # Saving the model with the best validation accuracy
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = net.state_dict()
@@ -154,16 +154,16 @@ def train_model_tpu(net, dataloaders, optimizer, scheduler, criterion, num_epoch
     print('Training complete')
     print(f'Best Validation Accuracy: {best_acc:.4f}')
 
-    # Load best model weights
+    # Loadded best model weights
     if best_model_wts:
         net.load_state_dict(best_model_wts)
 
     return train_losses, val_losses, train_accuracies, val_accuracies
 
-# 9. Train the model
+# 9. Training the model
 train_losses, val_losses, train_accuracies, val_accuracies = train_model_tpu(net, dataloaders, optimizer, scheduler, criterion, num_epochs=50)
 
-# 10. Plot the training and validation accuracies
+# 10. Plotting the training and validation accuracies
 plt.figure(figsize=(10,5))
 plt.plot(train_accuracies, label='Train Accuracy')
 plt.plot(val_accuracies, label='Validation Accuracy')
@@ -174,7 +174,7 @@ plt.ylim(0.5,1)
 plt.legend()
 plt.show()
 
-# 11. Plot the training and validation losses
+# 11. Plotting the training and validation losses
 plt.figure(figsize=(10,5))
 plt.plot(train_losses, label='Train Loss')
 plt.plot(val_losses, label='Validation Loss')
@@ -189,7 +189,7 @@ plt.show()
 def calculate_accuracy(loader, model):
     correct = 0
     total = 0
-    model.eval()  # Set model to evaluation mode
+    model.eval()  # Setting model to evaluation mode
     with torch.no_grad():
         for data in loader:
             inputs, labels = data
@@ -208,7 +208,7 @@ def plot_confusion_matrix(net, testloader):
     all_preds = []
     all_labels = []
 
-    net.eval()  # Set model to evaluation mode
+    net.eval()  # Setting model to evaluation mode
     with torch.no_grad():
         for data in testloader:
             inputs, labels = data
@@ -218,7 +218,7 @@ def plot_confusion_matrix(net, testloader):
             all_preds.extend(predicted.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
 
-    # Generate confusion matrix
+    # Generatting confusion matrix
     cm = confusion_matrix(all_labels, all_preds)
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=full_trainset.classes, yticklabels=full_trainset.classes)
@@ -227,5 +227,5 @@ def plot_confusion_matrix(net, testloader):
     plt.title('Confusion Matrix')
     plt.show()
 
-# 14. Plot confusion matrix on test set
+# 14. Plotting confusion matrix on test set
 plot_confusion_matrix(net, testloader)
