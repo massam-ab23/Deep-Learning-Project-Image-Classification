@@ -1,5 +1,6 @@
 '''
-A summary comment of the code:
+A code summary with comments explaining its functionality at necessary points:
+
 This script trains and evaluates a ResNet18 model for image classification using transfer learning. 
 The model is trained on TPU with PyTorch XLA support, and key functionalities include data augmentation, dynamic train-validation splitting, performance tracking, 
 and visualization of training metrics. A confusion matrix is plotted at the end to evaluate the model’s performance on the test set.
