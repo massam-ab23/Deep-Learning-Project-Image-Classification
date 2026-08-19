@@ -5,11 +5,6 @@ This script trains and evaluates a ResNet18 model for image classification using
 The model is trained on TPU with PyTorch XLA support, and key functionalities include data augmentation, dynamic train-validation splitting, performance tracking, 
 and visualization of training metrics. A confusion matrix is plotted at the end to evaluate the model’s performance on the test set.
 '''
---------------------------------------------------------------------------------------------
-#%cd "/content/drive/MyDrive/SoundClassification"
-%cd "/content/drive/MyDrive/ImageClassification_Task2"
---------------------------------------------------------------------------------------------
-
 
 # Imports
 import torch
@@ -26,7 +21,7 @@ import seaborn as sns
 import numpy as np
 import time
 import os
-
+import copy
 # 1. Define data augmentation and normalization for training, validation, and test sets
 data_transforms = {
     'train': transforms.Compose([
@@ -150,7 +145,7 @@ def train_model_tpu(net, dataloaders, optimizer, scheduler, criterion, num_epoch
             # Saving the model with the best validation accuracy
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
-                best_model_wts = net.state_dict()
+                best_model_wts = copy.deepcopy(net.state_dict())
 
     print('Training complete')
     print(f'Best Validation Accuracy: {best_acc:.4f}')
